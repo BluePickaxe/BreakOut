@@ -19,6 +19,7 @@
 char board[COLUMN][ROW];
 
 boolean is_started = false;
+boolean is_finished = false;
 int bar_pos = 50;
 int ballX = 50;
 int ballY = 23;
@@ -31,11 +32,45 @@ void gotoxy(int x, int y){
 
 void move_ball(){
 	if(ballY == 0){
-		if(balldir == LU){
+		if(balldir == LU){ // 위쪽 벽에 부딪힐때 
 			balldir = LD;
 		} else if(balldir == RU){
 			balldir = RD;
 		}
+	} else if(ballX == 0){ // 왼쪽 벽에 부딪힐때 
+		if(balldir == LU){
+			balldir = RU;
+		} else if(balldir == LD){
+			balldir = RD;
+		}
+	} else if(ballX == 100){ // 오른쪽 벽에 부딪힐때 
+		if(balldir == RD){
+			balldir = LD;
+		} else if(balldir == RU){
+			balldir = LU;
+		}
+	} else if(board[ballY-1][ballX] == '#'){
+		if(balldir == LU){ // 위쪽 벽에 부딪힐때 
+			balldir = LD;
+			board[ballY-1][ballX] = ' ';
+			gotoxy(ballX, ballY-1);
+			printf(" ");
+		} else if(balldir == RU){
+			balldir = RD;
+			board[ballY-1][ballX] = ' ';
+			gotoxy(ballX, ballY-1);
+			printf(" ");
+		}
+	} else if(ballY == COLUMN-2){
+		if(ballX == bar_pos-2 || ballX == bar_pos-1 || ballX == bar_pos || ballX == bar_pos+1 || ballX == bar_pos+2){ // 바에 부딪힐 때 
+			if(balldir == LD){
+				balldir = LU;
+			} else if(balldir == RD){
+				balldir = RU;
+			}
+		}
+	} else if(ballY == COLUMN-1){
+		is_finished = true;
 	}
 	switch(balldir){
 		case LU:
@@ -147,9 +182,11 @@ int main(){
 			if(_kbhit()){ //키보드 입력 체크
 				char key = _getch();
 				if(key == 32){ //스페이스
-					start_game();
+					if(is_started == false){
+						start_game(); // 게임이 시작되지 않은 상태에서만 시작 
+					}
 				} else if(key == 13){ //엔터
-					break; //반복문 종료 
+					is_finished = true;
 				} else if(key == -32){
 					key = _getch();
 					if(key == LEFT){ //왼쪽 방향키 
@@ -162,6 +199,11 @@ int main(){
 		}
 		if(is_started){
 			move_ball();
+		}
+		if(is_finished){
+			system("cls");
+			printf("게임이 종료되었습니다");
+			break; // 반복문 탈출 
 		}
 	}
 }
