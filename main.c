@@ -12,38 +12,40 @@
 
 char board[COLUMN][ROW];
 
-boolean game_started = false;
+boolean isbarmove = false;
+boolean is_started = false;
 int bar_pos = 50;
 int ballX = 50;
 int ballY = 23;
 
 void gotoxy(int x, int y){
-	COORD Pos = {x + 1, y + 2}; // Å×µÎ¸®¿Í Ã³À½ ¼³¸í ºÎºĞ °¨¾È 
+	COORD Pos = {x + 1, y + 2}; // í…Œë‘ë¦¬ì™€ ì²˜ìŒ ì„¤ëª… ë¶€ë¶„ ê°ì•ˆ 
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Pos);
 }
 
-unsigned __stdcall t1(void *arg){
+unsigned __stdcall move_ball(void *arg){
 	while(true){
-		Sleep(100);
-		gotoxy(ballX, ballY);
-		printf(" ");
-		ballX += 1;
-		ballY -= 1;
-		gotoxy(ballX, ballY);
-		printf("O");
+			Sleep(100);
+			gotoxy(ballX, ballY);
+			printf(" ");
+			ballX += 1;
+			ballY -= 1;
+			gotoxy(ballX, ballY);
+			printf("O");
 	}
 }
 
+
 void make_board(){
-	printf("SPACE Å°¸¦ ´©¸£¸é ½ÃÀÛÇÏ°í ENTER Å°¸¦ ´©¸£¸é °ÔÀÓÀÌ ³¡³³´Ï´Ù.\n");
-	printf("¦£");
+	printf("SPACE í‚¤ë¥¼ ëˆ„ë¥´ë©´ ì‹œì‘í•˜ê³  ENTER í‚¤ë¥¼ ëˆ„ë¥´ë©´ ê²Œì„ì´ ëë‚©ë‹ˆë‹¤.\n");
+	printf("â”Œ");
 	for(int i=0;i<ROW;i++){
-		printf("¦¡");
+		printf("â”€");
 	}
-	printf("¦¤");
+	printf("â”");
 	printf("\n");
 	for(int i=0;i<COLUMN;i++){
-		printf("¦¢");
+		printf("â”‚");
 		for(int j=0;j<ROW;j++){
 			if(i < 5){
 				board[i][j] = '#';	
@@ -63,7 +65,7 @@ void make_board(){
 			
 			
 		}
-		printf("¦¢");
+		printf("â”‚");
 		printf("\n");
 	}
 }
@@ -93,28 +95,30 @@ void move_bar(int LR){
 }
 
 void start_game(){
-	gotoxy(ballX, ballY);
+	gotoxy(50, 23);
 	printf("O");
-	_beginthreadex(NULL, 0, t1, 0, 0, NULL);
-
-
+	_beginthreadex(NULL, 0, move_ball, 0, 0, NULL);
 }
 
 int main(){
 	make_board();
 	while(true){
-		if(_kbhit()){ //Å°º¸µå ÀÔ·Â Ã¼Å©
+		Sleep(1);
+		isbarmove = false;
+		if(_kbhit()){ //í‚¤ë³´ë“œ ì…ë ¥ ì²´í¬
 			char key = _getch();
-			if(key == 32){ //½ºÆäÀÌ½º
+			if(key == 32){ //ìŠ¤í˜ì´ìŠ¤
 				start_game();
-			} else if(key == 13){ //¿£ÅÍ
-				break; //¹İº¹¹® Á¾·á 
+			} else if(key == 13){ //ì—”í„°
+				break; //ë°˜ë³µë¬¸ ì¢…ë£Œ 
 			} else if(key == -32){
 				key = _getch();
-				if(key == LEFT){ //¿ŞÂÊ ¹æÇâÅ° 
+				if(key == LEFT){ //ì™¼ìª½ ë°©í–¥í‚¤ 
 					move_bar(LEFT);
-				} else if(key == RIGHT){ //¿À¸¥ÂÊ ¹æÇâÅ° 
+					isbarmove = true;
+				} else if(key == RIGHT){ //ì˜¤ë¥¸ìª½ ë°©í–¥í‚¤ 
 					move_bar(RIGHT);
+					isbarmove = true;
 				}
 			}
 		}
