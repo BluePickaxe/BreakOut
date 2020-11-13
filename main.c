@@ -3,6 +3,7 @@
 #include <conio.h>
 #include <stdbool.h>
 #include <process.h>
+#include <time.h>
 
 #define ROW 101
 #define COLUMN 25
@@ -10,28 +11,65 @@
 #define LEFT 75
 #define RIGHT 77
 
+#define LU 1
+#define RU 2
+#define LD 3
+#define RD 4
+
 char board[COLUMN][ROW];
 
-boolean isbarmove = false;
 boolean is_started = false;
 int bar_pos = 50;
 int ballX = 50;
 int ballY = 23;
+int balldir = RU;
 
 void gotoxy(int x, int y){
 	COORD Pos = {x + 1, y + 2}; // 테두리와 처음 설명 부분 감안 
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), Pos);
 }
 
-unsigned __stdcall move_ball(void *arg){
-	while(true){
-			Sleep(100);
+void move_ball(){
+	if(ballY == 0){
+		if(balldir == LU){
+			balldir = LD;
+		} else if(balldir == RU){
+			balldir = RD;
+		}
+	}
+	switch(balldir){
+		case LU:
+			gotoxy(ballX, ballY);
+			printf(" ");
+			ballX -= 1;
+			ballY -= 1;
+			gotoxy(ballX, ballY);
+			printf("O");
+			break;
+		case RU:
 			gotoxy(ballX, ballY);
 			printf(" ");
 			ballX += 1;
 			ballY -= 1;
 			gotoxy(ballX, ballY);
 			printf("O");
+			break;
+		case LD:
+			gotoxy(ballX, ballY);
+			printf(" ");
+			ballX -= 1;
+			ballY += 1;
+			gotoxy(ballX, ballY);
+			printf("O");
+			break;
+		case RD:
+			gotoxy(ballX, ballY);
+			printf(" ");
+			ballX += 1;
+			ballY += 1;
+			gotoxy(ballX, ballY);
+			printf("O");
+			break;
 	}
 }
 
@@ -97,30 +135,33 @@ void move_bar(int LR){
 void start_game(){
 	gotoxy(50, 23);
 	printf("O");
-	_beginthreadex(NULL, 0, move_ball, 0, 0, NULL);
+	is_started = true;
 }
 
 int main(){
 	make_board();
+	
 	while(true){
-		Sleep(1);
-		isbarmove = false;
-		if(_kbhit()){ //키보드 입력 체크
-			char key = _getch();
-			if(key == 32){ //스페이스
-				start_game();
-			} else if(key == 13){ //엔터
-				break; //반복문 종료 
-			} else if(key == -32){
-				key = _getch();
-				if(key == LEFT){ //왼쪽 방향키 
-					move_bar(LEFT);
-					isbarmove = true;
-				} else if(key == RIGHT){ //오른쪽 방향키 
-					move_bar(RIGHT);
-					isbarmove = true;
+		clock_t start = clock();
+		while(clock() - start < 100){
+			if(_kbhit()){ //키보드 입력 체크
+				char key = _getch();
+				if(key == 32){ //스페이스
+					start_game();
+				} else if(key == 13){ //엔터
+					break; //반복문 종료 
+				} else if(key == -32){
+					key = _getch();
+					if(key == LEFT){ //왼쪽 방향키 
+						move_bar(LEFT);
+					} else if(key == RIGHT){ //오른쪽 방향키 
+						move_bar(RIGHT);
+					}
 				}
 			}
+		}
+		if(is_started){
+			move_ball();
 		}
 	}
 }
